@@ -1,0 +1,9 @@
+bin/
+/lib/
+lib64/
+pyvenv.cfg
+include/
+__pycache__
+migrations/
+db.sqlite3
+pyclients/
