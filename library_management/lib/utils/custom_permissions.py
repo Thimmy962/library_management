@@ -16,13 +16,14 @@ from rest_framework import permissions
 #         return super().has_pemission(request, view)
 
                 # OR
+"""
+Custom permissions
+"""
 
 class IsSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
-
-        # if all these are true return true else return false
-        return bool(user.is_authenticated and user.is_superuser and user.is_active)
+        return bool(user.is_authenticated and user.is_superuser and user.is_active and user.is_staff)
 
 class IsStaffUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -34,10 +35,25 @@ class IsStaffUser(permissions.BasePermission):
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.email == request.user.email
-
     
-StaffPermissionMixins = [permissions.IsAuthenticated, IsStaffUser]
+"""
+Custom functions
+"""
 
+def clean_data(data):
+    if "email" in data:
+        data["email"] = data["email"].lower()
+    if "first_name" in data:
+        data["first_name"] = data["first_name"].title()
+    if "last_name" in data:
+        data["last_name"] = data["last_name"].title()
+    if "name" in data:
+        data["name"] = data["name"].title()
+    print(data)
+    return data
+
+class StaffMixins:
+    permission_classes = [permissions.IsAuthenticated, IsSuperUser]
 
 class SuperUserMixins:
     permission_classes = [permissions.IsAuthenticated, IsSuperUser]

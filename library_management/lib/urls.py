@@ -3,8 +3,8 @@ from .views import listcreateviews, views
 
 urlpatterns =[
     path("", views.path_list),
-    path("get_members/", listcreateviews.get_members),
-    path("post_member/", listcreateviews.post_member),
-    path("get_staffs/", listcreateviews.get_staffs),
-    path("post_staff/", listcreateviews.post_staff)
+    path("members/", listcreateviews.list_create_member),
+    path("staffs/", listcreateviews.list_create_staffs),
+    path("librarian/", listcreateviews.list_create_librarian),
+    path("genres/", listcreateviews.list_create_genres)
 ]

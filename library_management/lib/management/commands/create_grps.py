@@ -8,10 +8,13 @@ class Command(BaseCommand):
     help = 'Create necessary groups and assign permissions'
 
     def handle(self, *args, **kwargs):
-        staff_group, created = Group.objects.get_or_create(name="staffManager")
+        # get this group
+        staff_group, created = Group.objects.get_or_create(name="StaffManager")
+        # get the content type of this model staff
         staff_content_type = ContentType.objects.get_for_model(models.Staffs)
+        # get the permissions associated with a staff model(CRUD of stff)
         staff_permissions = Permission.objects.filter(content_type=staff_content_type)
-
+        # add permissions associated with staff to the group created
         staff_group.permissions.add(*staff_permissions)
 
         self.stdout.write(self.style.SUCCESS(f'New groups created'))
