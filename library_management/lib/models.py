@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from .utils import manageuser
 from django.contrib.auth.models import Group, Permission
@@ -62,7 +64,24 @@ class Books(models.Model):
     synopsis = models.TextField(max_length=2048)
 
 
-# class Reviews(models.Model):
-#     reviewer = models.ForeignKey(Authors, on_delete=models.DO_NOTHING, related_name = "reviews_by_member")
-#     content_type = model
-#     content
+
+class Review(models.Model):
+    class StarRating(models.IntegerChoices):
+        FIVE_STARS = 5, "5"
+        FOUR_STARS = 4, "4"
+        THREE_STARS = 3, "3"
+        TWO_STARS = 2, "2"
+        ONE_STAR = 1, "1"
+
+    # Reviewer relationship
+    reviewer = models.ForeignKey('Members', on_delete=models.DO_NOTHING, related_name="reviews")
+    # Generic foreign key fields
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    # Rating and comment
+    rating = models.IntegerField(choices=StarRating.choices, null=True)
+    comment = models.CharField(max_length=2048, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

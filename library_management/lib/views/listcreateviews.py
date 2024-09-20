@@ -1,101 +1,146 @@
 
-
-from rest_framework import permissions, decorators, response, status, views, generics
+from rest_framework import permissions, decorators, response, status, generics
 from ..utils import custom_permissions
-from ..models import Members, Staffs, Librarian, Genres
+from ..models import Members, Staffs, Librarian, Genres, Authors
 from ..utils import serializers
 
-@decorators.api_view(["GET","POST"])
-def list_create_member(request):
-    if request.method == "GET":
-        permission = custom_permissions.IsStaffUser()
-        if not permission.has_permission(request, None):
-            return response.Response({"error": "You are not authorized to view member list"}, status=status.HTTP_403_FORBIDDEN)
-        members = Members.objects.all()
-        serializer = serializers.GetMemberSerializer(members, many=True)
-        return response.Response(serializer.data)
+
+class MemberListCreateView(custom_permissions.StaffMixins, generics.ListCreateAPIView):
+    queryset = Members.objects.all()
+    serializer_class = serializers.PostMemberSerializer
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.AllowAny()]  # Allow anyone to POST
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return serializers.GetLibrarianSerializer  # Serializer for GET requests
+        return serializers.PostMemberSerializer  # Default to POST serializer
+
+    def perform_create(self, serializer):
+        cleaned_data = serializer.clean_data(self.request.data)  # Assuming custom clean_data method
+        validated_serializer = self.get_serializer(data=cleaned_data)  # Pass the cleaned data to the serializer
+        validated_serializer.is_valid(raise_exception=True)  # Validate the cleaned data
+        validated_serializer.save()  # Save the validated data
+    # Save the cleaned data directly
+
+    def create(self, request, *args, **kwargs):
+        res = super().create(request, *args, **kwargs)
+        return response.Response({"message": "New member created successfully"}, status=status.HTTP_201_CREATED)
+
+list_create_members = MemberListCreateView.as_view()
+
     
-    elif request.method == "POST":
-        permission = permissions.AllowAny()
-        if not permission.has_permission(request, None):
-            return response.Response({"error": "You are not authorized to perform this action"}, status=status.HTTP_403_FORBIDDEN)
-        data = request.data
-        data = custom_permissions.clean_data(data)
-        serializer = serializers.PostMemberSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return response.Response({"message": "Successful"}, status=status.HTTP_201_CREATED)
+
+
+class StaffListCreateView(custom_permissions.StaffMixins, generics.ListCreateAPIView):
+    queryset = Staffs.objects.all()  # Define the queryset
+    serializer_class = serializers.PostStaffSerializer  # Default serializer for POST
+
+    # Dynamically choose the serializer based on the request method
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return serializers.GetStaffSerializer  # Serializer for GET
+        return super().get_serializer_class()  # Default behavior for other methods
+    
+    def perform_create(self, serializer):
+        # Access clean_data method within the serializer
+        cleaned_data = serializer.clean_data(self.request.data)  # Call clean_data from serializer
+        validated_serializer = self.get_serializer(data=cleaned_data)
+        if validated_serializer.is_valid():
+            validated_serializer.save()  # Save the data if valid
         else:
-            return response.Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            raise serializers.serializers.ValidationError(validated_serializer.errors)
 
 
+    def create(self, request,*args, **kwargs):
+        super().create(request,*args, **kwargs)
+        return response.Response({"message": "New genre created successfully"}, status=status.HTTP_201_CREATED)
 
-@decorators.api_view(["GET", "POST"])
-@decorators.permission_classes([custom_permissions.IsStaffUser])
-def list_create_staffs(request):
-    if request.method == "GET":
-        try:
-            librarian = Staffs.objects.all()
-            serializer = serializers.GetStaffSerializer(librarian, many=True)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return response.Response(serializer.errors)
+
+list_create_staffs = StaffListCreateView.as_view()
+
+class LibrarianListCreateView(custom_permissions.SuperUserMixins, generics.ListCreateAPIView):
+    queryset = Librarian.objects.all()  # Define the queryset
+    serializer_class = serializers.PostLibrarianSerializer  # Default serializer for POST
+
+    # Dynamically choose the serializer based on the request method
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return serializers.GetLibrarianSerializer  # Serializer for GET
+        return super().get_serializer_class()  # Default behavior for other methods
     
-    elif request.method == "POST":
-        # POST request logic  # Assuming a permission check for staff
-        data = custom_permissions.clean_data(request.data)
-        serializer = serializers.PostStaffSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return response.Response({"message": serializer.data}, status=status.HTTP_201_CREATED)
-        return response.Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@decorators.api_view(["GET", "POST"])
-@decorators.permission_classes([custom_permissions.IsSuperUser])
-def list_create_librarian(request):
-    if request.method == "GET":
-        try:
-        # GET request logic
-            librarian = Librarian.objects.all()
-            serializer = serializers.GetLibrarianSerializer(librarian, many=True)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return response.Response(serializer.errors)
-    
-    elif request.method == "POST":
-        # POST request logic  # Assuming a permission check for staff
-        data = request.data
-        data = custom_permissions.clean_data(data)
-        print(data)
-        serializer = serializers.PostLibrarianSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return response.Response({"message": serializer.data}, status=status.HTTP_201_CREATED)
-        return response.Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@decorators.api_view(["GET","POST"])
-def list_create_genres(request):
-    if request.method == "GET":
-        permission = permissions.AllowAny()
-        if not permission.has_permission(request, None):
-            return response.Response({"error": "You are not authorized to view member list"}, status=status.HTTP_403_FORBIDDEN)
-        genres = Genres.objects.all()
-        serializer = serializers.GenreSerializer(genres, many=True)
-        return response.Response(serializer.data)
-    
-    elif request.method == "POST":
-        permission = custom_permissions.IsSuperUser()
-        if not permission.has_permission(request, None):
-            return response.Response({"error": "You are not authorized to perform this action"}, status=status.HTTP_403_FORBIDDEN)
-        data = request.data
-        data = custom_permissions.clean_data(data)
-        serializer = serializers.GenreSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return response.Response({"message": "Successful", "data": serializer.data}, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        # Access clean_data method within the serializer
+        cleaned_data = serializer.clean_data(self.request.data)  # Call clean_data from serializer
+        validated_serializer = self.get_serializer(data=cleaned_data)
+        if validated_serializer.is_valid():
+            validated_serializer.save()  # Save the data if valid
         else:
-            return response.Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            raise serializers.serializers.ValidationError(validated_serializer.errors)
+
+
+    def create(self, request,*args, **kwargs):
+        super().create(request,*args, **kwargs)
+        return response.Response({"message": "New genre created successfully"}, status=status.HTTP_201_CREATED)
+
+
+list_create_librarian = LibrarianListCreateView.as_view()
+
+
+
+class GenreListCreateView(custom_permissions.StaffMixins, generics.ListCreateAPIView):
+    queryset = Genres.objects.all()  # Define the queryset
+    serializer_class = serializers.GenreSerializer  # Define the serializer
+
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+
+    # Overriding the POST behavior for custom data cleaning
+    def perform_create(self, serializer):
+        # Access clean_data method within the serializer
+        cleaned_data = serializer.clean_data(self.request.data)  # Call clean_data from serializer
+        validated_serializer = self.get_serializer(data=cleaned_data)
+        if validated_serializer.is_valid():
+            validated_serializer.save()  # Save the data if valid
+        else:
+            raise serializers.serializers.ValidationError(validated_serializer.errors)
+
+    # Overriding the response for POST
+    def create(self, request, *args, **kwargs):
+            res = super().create(request, *args, **kwargs)
+            return response.Response({"message": "New genre created successfully"}, status=status.HTTP_201_CREATED)
+
+
+# Create an instance of the view
+list_create_genres = GenreListCreateView.as_view()
+
+
+class AuthorListCreateView(custom_permissions.StaffMixins, generics.ListCreateAPIView):
+    queryset = Authors.objects.all()
+    serializer_class = serializers.AuthorSerializer
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+    
+    def perform_create(self, serializer):
+        cleaned_data = serializer.clean_data(self.request.data)  # Call clean_data from serializer
+        validated_serializer = self.get_serializer(data=cleaned_data)
+        if validated_serializer.is_valid():
+            validated_serializer.save()  # Save the data if valid
+        else:
+            raise serializers.serializers.ValidationError(validated_serializer.errors)
+    
+    def create(self, request, *args, **kwargs):
+        res = super().create(request, *args, **kwargs)
+        return response.Response({"message": "New author created successfully"}, status=status.HTTP_201_CREATED)
+    
+list_create_authors = AuthorListCreateView.as_view()
+

@@ -49,11 +49,10 @@ def clean_data(data):
         data["last_name"] = data["last_name"].title()
     if "name" in data:
         data["name"] = data["name"].title()
-    print(data)
     return data
 
 class StaffMixins:
-    permission_classes = [permissions.IsAuthenticated, IsSuperUser]
+    permission_classes = [permissions.IsAuthenticated, IsStaffUser]
 
 class SuperUserMixins:
     permission_classes = [permissions.IsAuthenticated, IsSuperUser]
