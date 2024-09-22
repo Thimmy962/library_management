@@ -28,7 +28,7 @@ class IsSuperUser(permissions.BasePermission):
 class IsStaffUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # Check if the user is authenticated and is a staff member
-        if request.user and request.user.is_authenticated and request.user.is_staff:
+        if request.user.is_authenticated and request.user.is_staff:
             return True
         return False
 
@@ -36,6 +36,15 @@ class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.email == request.user.email
     
+
+# allow any user to get but staffs alone to edit
+class IsStaffOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and request.user.is_staff
+    
+
 """
 Custom functions
 """
@@ -51,11 +60,18 @@ def clean_data(data):
         data["name"] = data["name"].title()
     return data
 
-class StaffMixins:
+"""
+Custom mixins
+"""
+
+class IsStaffMixin:
     permission_classes = [permissions.IsAuthenticated, IsStaffUser]
 
-class SuperUserMixins:
+class IsSuperUserMixin:
     permission_classes = [permissions.IsAuthenticated, IsSuperUser]
 
-class OwnerPermissionMixinxs:
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+class IsOwnerPermissionMixinxs:
+    permission_classes = [IsStaffUser, IsOwner]
+
+class IsStaffOrReadOnlyMixin:
+    permission_classes = [IsStaffOrReadOnly]

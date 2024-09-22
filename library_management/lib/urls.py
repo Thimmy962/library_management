@@ -7,5 +7,8 @@ urlpatterns =[
     path("staffs/", listcreateviews.list_create_staffs),
     path("librarian/", listcreateviews.list_create_librarian),
     path("genres/", listcreateviews.list_create_genres),
-    path("authors/", listcreateviews.list_create_authors)
+    path("authors/", listcreateviews.list_create_authors),
+    path("books/", listcreateviews.list_create_books),
+    path("grps/", views.get_create_grps),
+    path("perms/", views.get_perms)
 ]

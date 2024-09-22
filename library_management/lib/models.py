@@ -56,12 +56,15 @@ class Authors(models.Model):
 class Genres(models.Model):
     name = models.CharField(max_length=64, null=False, blank=False, unique=True)
 
+    def __str__(self) -> str:
+        return f"{self.name}"
+
 
 class Books(models.Model):
-    name = models.CharField(max_length=64, null=False, blank=False)
-    author = models.ManyToManyField(Authors, related_name="this_authors_books")
+    book_name = models.CharField(max_length=64, null=False, blank=False)
+    authors = models.ManyToManyField(Authors, related_name="this_authors_books", default=None)
     genres = models.ManyToManyField(Genres, related_name="this_genres_books")
-    synopsis = models.TextField(max_length=2048)
+    synopsis = models.TextField(max_length=2048, default="No synopsis given")
 
 
 
