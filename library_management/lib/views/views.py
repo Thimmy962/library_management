@@ -39,7 +39,7 @@ def path_list(request):
                     "is_staff(has a default but can be overrwritten)",
                     "is_superuser(has a default but can be overrwritten)",
                     "role(has default which is not meant to be overwritten, one of the ways registered users are diffentiated from staffs)",
-                    "password(which will be hased)"
+                    "password(which will be hashed)"
                 ]
             },
             {
@@ -93,8 +93,27 @@ def path_list(request):
             },
             {
                 "path": "permissions/",
-                "description": "list",
-                "permissions": "a superuser"
+                "description": "list all permissions",
+                "permissions": "superuser only",
+                "requirements": "must be a superuser"
+            },
+            {
+                "path": "librarian/id",
+                "description": "retrieves librarian with this id and update or delete depebding on the http request",
+                "permission": "superuser only",
+                "requirements": "id of the librarian"
+            },
+            {
+                "path": "staff/id",
+                "description": "retrieves staff with this id and update or delete depebding on the http request",
+                "permission": "superuser only",
+                "requirements": "id of the staff"
+            },
+            {
+                "path": "member/id",
+                "description": "retrieves memeber with this id and update or delete depebding on the http request",
+                "permission": "is staff or owner",
+                "requirements": "id of the member"
             }
     ]
 

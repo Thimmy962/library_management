@@ -2,13 +2,13 @@
 from ..utils import manageuser
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
-from rest_framework import serializers
+from rest_framework import serializers, status
 from .. import models
 
 
 def validate_email(value):
         if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
-            raise serializers.ValidationError("A user with this email already exists.")
+            raise serializers.ValidationError({"message": "A user with this email already exists."})
         return
 
 
@@ -31,7 +31,7 @@ class GetMemberSerializer(serializers.ModelSerializer):
     content_type = serializers.SerializerMethodField()
     class Meta:
         model = models.Members
-        fields = ["customeuser_ptr_id", "email", "first_name", "last_name", "content_type"]
+        fields = ["id", "email", "first_name", "last_name", "content_type"]
 
     def get_content_type(self, obj):
         return ContentType.objects.get_for_model(obj).id
