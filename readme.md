@@ -29,4 +29,4 @@ run python3 manage.py create_grps
 
 run: python3 manage.py runserver <!--  To start dev server -->
 
-http://locolhost:<your port>/ :: this gives a list of endpoints and theri descriptions
+http://locolhost:<your port>/ :: this gives a list of endpoints and their descriptions
