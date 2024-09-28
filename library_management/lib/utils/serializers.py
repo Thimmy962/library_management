@@ -6,11 +6,6 @@ from rest_framework import serializers, status
 from .. import models
 
 
-def validate_email(value):
-        if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
-            raise serializers.ValidationError({"message": "A user with this email already exists."})
-        return
-
 
 class GroupSerializer(serializers.SerializerMethodField):
     class Meta:
@@ -28,13 +23,9 @@ class PermissionSerializer(serializers.SerializerMethodField):
 
 
 class GetMemberSerializer(serializers.ModelSerializer):
-    content_type = serializers.SerializerMethodField()
     class Meta:
         model = models.Members
-        fields = ["id", "email", "first_name", "last_name", "content_type"]
-
-    def get_content_type(self, obj):
-        return ContentType.objects.get_for_model(obj).id
+        fields = ["id", "email", "first_name", "last_name"]
 
 
 class PostMemberSerializer(serializers.ModelSerializer):
@@ -42,23 +33,28 @@ class PostMemberSerializer(serializers.ModelSerializer):
         model = models.Members
         fields = "__all__"
 
+    def validate_email(self, value):
+        if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
+            raise serializers.ValidationError({"message": "A user with this email already exists."})
+        return value
 
-
-    
 
 class PostStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Staffs
         fields = "__all__"
 
-
+    def validate_email(self, value):
+        if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
+            raise serializers.ValidationError({"message": "A user with this email already exists."})
+        return value
 
 
 class GetStaffSerializer(serializers.ModelSerializer):
     content_type = serializers.SerializerMethodField()
     class Meta:
         model = models.Staffs
-        fields = ["email", "first_name", "last_name", "content_type"]
+        fields = ["id", "email", "first_name", "last_name", "content_type"]
 
     
     def get_content_type(self, obj):
@@ -68,7 +64,12 @@ class GetStaffSerializer(serializers.ModelSerializer):
 class PostLibrarianSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Librarian
-        fields = "__all__"    
+        fields = "__all__"   
+
+    def validate_email(self, value):
+        if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
+            raise serializers.ValidationError({"message": "A user with this email already exists."})
+        return value
 
 
 class GetLibrarianSerializer(serializers.ModelSerializer):
@@ -87,10 +88,15 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-    def clean_data(self, data):
-        if "name" in data:
-            data["name"] = data["name"].strip().title()
-        return data
+    def validate_name(self, value):
+        # Clean the name field
+        cleaned_value = value.strip().title()
+
+        # Check if the cleaned name already exists in the database
+        if models.Genres.objects.filter(name=cleaned_value).exists():
+            raise serializers.ValidationError("A genre with this name already exists.")
+
+        return cleaned_value
 
 
 
@@ -99,36 +105,54 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = models.Authors
         fields = "__all__"
 
-    def clean_data(self, data):
+    def validate(self, data):
         if "first_name" in data:
             data["first_name"] = data["first_name"].strip().title()
         if "last_name" in data:
             data["last_name"] = data["last_name"].strip().title()
+        if models.Authors.objects.filter(
+            first_name=data["first_name"], 
+            last_name=data["last_name"]
+        ).exists():
+            raise serializers.ValidationError(
+                "Author with this name already exists"
+            )
         return data
 
 
 """
     The below has to do with Non human entities
 """
-class BooKSerializer(serializers.ModelSerializer):
+
+class BookSerializer(serializers.ModelSerializer):
+    authors = serializers.SerializerMethodField()
+    genres = serializers.SerializerMethodField()
     class Meta:
-        model = models.Books
-        fields = "__all__"
-
-
-    def clean_data(self, data):
-        if "booK_name" in data:
-            data["book_name"] = data["book_name"].strip().title()
-        return data
-    
-
-    def add_genres(self, genre_list):
-        for genre in genre_list:
-            this_genre = models.Genre.objects.get(pk = int(genre))
-            self.genres.add(this_genre)
+        model = models.Books  # Ensure you're using the correct model
+        fields = "__all__"  # Initially, we define that we'll use all fields
 
     
-    def add_authors(self, author_list):
-        for author in author_list:
-            this_genre = models.Genre.objects.get(pk = int(author))
-            self.genres.add(this_genre)
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get('request')
+
+        if request and request.method != 'GET':
+            # Retain only specific fields for non-POST requests
+            fields = {
+                    'id': fields['id'],
+                    'book_name': fields['book_name'],
+                    'authors': fields['authors'],
+                    'genres': fields['genres'],
+                }
+        return fields
+    
+    def get_authors(self, obj):
+        # This method will be called to get the serialized authors data
+        return [f"{author.first_name} {author.last_name}" for author in obj.authors.all()]
+    
+    def get_genres(self, obj):
+        return [f"{genre.name}" for genre in obj.genres.all()]
+
+    def validate_book_name(self, value):
+        # Clean and validate the book name
+        return value.strip().title()

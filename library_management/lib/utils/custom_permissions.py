@@ -23,7 +23,7 @@ Custom permissions
 class IsSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
-        return bool(user.is_authenticated and user.is_superuser and user.is_active and user.is_staff)
+        return bool(user.is_authenticated and user.is_superuser and user.is_active)
 
 class IsStaffUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -38,17 +38,17 @@ class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
-        # return request.user.is_authenticated and request.user.is_staff
+        return request.user.is_authenticated and request.user.is_staff
 
 
+
+from rest_framework import permissions
 
 class IsStaffOrOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # Allow if the user is staff
-        if request.user.is_staff:
-            return True
-        # Allow if the user is the owner (by email comparison)
-        return obj.email == request.user.email
+        # Allow if the user is authenticated and is staff or the owner (by email comparison)
+        return request.user.is_authenticated and (request.user.is_staff or obj.email == request.user.email)
+
 
 
 
@@ -72,12 +72,12 @@ Custom mixins
 """
 
 class IsStaffMixin:
-    permission_classes = [permissions.IsAuthenticated, IsStaffUser]
+    permission_classes = [IsStaffUser]
 
 class IsSuperUserMixin:
-    permission_classes = [permissions.IsAuthenticated, IsSuperUser]
+    permission_classes = [IsSuperUser]
 
-class IsStaffOrOwnerPermissionMixin:
+class IsStaffOrOwnerMixin:
     permission_classes = [IsStaffOrOwner]
 
 class IsStaffOrReadOnlyMixin:

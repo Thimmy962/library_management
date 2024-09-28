@@ -1,8 +1,8 @@
-from ..models import Members, Staffs, Librarian
+from ..models import Members, Staffs, Librarian, Books
 from rest_framework import generics, response, status
 from ..utils import serializers, custom_permissions
 
-class MemberRetrieveUpdateDeleteView(custom_permissions.IsStaffOrOwnerPermissionMixin, generics.RetrieveUpdateDestroyAPIView):
+class MemberRetrieveUpdateDeleteView(custom_permissions.IsStaffOrOwnerMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Members.objects.all()
     lookup_field = "id"
     serializer_class = serializers.GetMemberSerializer
@@ -10,7 +10,7 @@ class MemberRetrieveUpdateDeleteView(custom_permissions.IsStaffOrOwnerPermission
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        return response.Response({"message": "Deleted successfully"}, status=status.HTTP_200_OK)
+        return response.Response({"message": "Member deleted successfully"}, status=status.HTTP_200_OK)
 
 retrieve_update_delete_member = MemberRetrieveUpdateDeleteView.as_view()
 
@@ -23,7 +23,7 @@ class StaffRetrieveUpdateDeleteView(custom_permissions.IsSuperUserMixin, generic
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        return response.Response({"message": "Deleted successfully"}, status=status.HTTP_200_OK)
+        return response.Response({"message": "Staff deleted successfully"}, status=status.HTTP_200_OK)
 
 retrieve_update_delete_staff = StaffRetrieveUpdateDeleteView.as_view()
 
@@ -36,7 +36,19 @@ class LibrarianRetrieveUpdateDeleteView(custom_permissions.IsSuperUserMixin, gen
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        return response.Response({"message": "Deleted successfully"}, status=status.HTTP_200_OK)
+        return response.Response({"message": "Librarian deleted successfully"}, status=status.HTTP_200_OK)
 
 retrieve_update_delete_librarian = LibrarianRetrieveUpdateDeleteView.as_view()
 
+
+class BookRetrieveUpdateDelete(custom_permissions.IsStaffOrReadOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
+    queryset = Books.objects.all()
+    lookup_field = "id"
+    serializer_class = serializers.GetLibrarianSerializer
+
+
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+        return response.Response({"message": "Librarian deleted successfully"}, status=status.HTTP_200_OK)
+    
+retrieve_update_book = BookRetrieveUpdateDelete.as_view()

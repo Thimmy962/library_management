@@ -13,5 +13,6 @@ urlpatterns =[
     path("perms/", views.get_perms),
     path("staff/<int:id>", retrieveupdatedeleteviews.retrieve_update_delete_staff),
     path("member/<int:id>", retrieveupdatedeleteviews.retrieve_update_delete_member),
-    path("librarian/<int:id>", retrieveupdatedeleteviews.retrieve_update_delete_librarian)
+    path("librarian/<int:id>", retrieveupdatedeleteviews.retrieve_update_delete_librarian),
+    path("book/<int:id>", retrieveupdatedeleteviews.retrieve_update_book)
 ]

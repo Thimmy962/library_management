@@ -128,8 +128,7 @@ class GETCREATEGROUPS(custom_permissions.IsSuperUserMixin, generics.ListCreateAP
 get_create_grps = GETCREATEGROUPS.as_view()
 
 
-class PermissionsListView(generics.ListCreateAPIView):
+class PermissionsListView(custom_permissions.IsStaffOrReadOnlyMixin, generics.ListCreateAPIView):
     queryset = Permission.objects.all()
-    permission_classes = [permissions.AllowAny] 
     serializer_class = serializers.PermissionSerializer # Optional: restrict to logged-in users
 get_perms = PermissionsListView.as_view()

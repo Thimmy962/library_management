@@ -52,6 +52,9 @@ class Authors(models.Model):
     first_name = models.CharField(max_length=32, null=False, blank=False)
     last_name = models.CharField(max_length=32, null=False, blank=False)
 
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+        return super().__str__()
 
 class Genres(models.Model):
     name = models.CharField(max_length=64, null=False, blank=False, unique=True)
@@ -65,6 +68,19 @@ class Books(models.Model):
     authors = models.ManyToManyField(Authors, related_name="this_authors_books", default=None)
     genres = models.ManyToManyField(Genres, related_name="this_genres_books")
     synopsis = models.TextField(max_length=2048, default="No synopsis given")
+
+
+    @property
+    def add_genres(self, genre_list):
+        for genre in genre_list:
+            this_genre = models.Genre.objects.get(pk=int(genre))
+            self.genres.add(this_genre)
+
+    @property
+    def add_authors(self, author_list):
+        for author in author_list:
+            this_author = models.Author.objects.get(pk=int(author))
+            self.authors.add(this_author)
 
 
 
