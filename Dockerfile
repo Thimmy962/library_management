@@ -13,11 +13,12 @@ COPY . /app/
 # Install dependencies using the requirements.txt located in /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Define environment variables (recommended before copying requirements.txt)
+# Change the working directory to the folder that contains manage.py
+WORKDIR /app/library_management
+
 
 # Expose port 8080 for the application
 EXPOSE 8080
 
 # Start the application using Gunicorn
-# CMD [ "gunicorn", "--bind", "0.0.0.0:8080", "library_management.wsgi:application" ]
-CMD ["./bash"]
+CMD [ "./bash"]
