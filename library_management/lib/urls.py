@@ -2,7 +2,6 @@ from django.urls import path
 from .views import listcreateviews, views, retrieveupdatedeleteviews
 
 urlpatterns =[
-    path("", views.path_list),
     path("members/", listcreateviews.list_create_members),
     path("staffs/", listcreateviews.list_create_staffs),
     path("librarian/", listcreateviews.list_create_librarian),

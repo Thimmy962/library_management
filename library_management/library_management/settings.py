@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url
 
 from django.conf import settings
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -11,17 +12,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=e^r=oo2d6cr2$7&)pf))z=dxm=$9!x0$xruu#$sasm-v4xzr+'
+SECRET_KEY = os.environ.get("secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get("debug", False)
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1"
-]
+ALLOWED_HOSTS = os.environ.get("allowed_hosts").split(" ")
 
-
+# for now
 CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
@@ -126,6 +124,15 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+
+DATABASE_URL = 'postgresql://library_yx2f_user:0sTPhS3OVr48I0JFNtXLwQDRt8PAK4pF@dpg-crshmfrtq21c73dfclag-a.frankfurt-postgres.render.com/library_yx2f'
+
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL)
+}
+
 
 
 # Password validation
