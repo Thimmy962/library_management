@@ -127,7 +127,7 @@ DATABASES = {
 
 
 
-DATABASE_URL = 'postgresql://library_yx2f_user:0sTPhS3OVr48I0JFNtXLwQDRt8PAK4pF@dpg-crshmfrtq21c73dfclag-a.frankfurt-postgres.render.com/library_yx2f'
+DATABASE_URL = os.environ.get("db_url")
 
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL)
