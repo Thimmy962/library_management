@@ -10,8 +10,10 @@ COPY /library_management .
 
 RUN cd /library_management
 
-RUN python3 manage.py makemigrations lib
 RUN ls
+
+RUN python3 manage.py makemigrations lib
+
 RUN python3 manage.py migrate
 RUN python3 manage.py collectstatic --noinput
 RUN python3 manage.py create_grps
