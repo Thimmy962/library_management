@@ -8,6 +8,12 @@ from django.conf import settings
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+print("ALLOWED_HOSTS:", os.environ.get("allowed_hosts"))
+print("SECRET_KEY:", os.environ.get("secret_key"))
+print("DATABASE_URL:", os.environ.get("db_url"))
+print("DEBUG:", os.environ.get("debug"))
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
