@@ -8,7 +8,9 @@ RUN pip install -r requirements.txt
 
 COPY /library_management .
 
-RUN python manage.py makemigrations
+RUN cd /library_management
+
+RUN python manage.py makemigrations lib
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 RUN python3 manage.py create_grps
