@@ -8,22 +8,19 @@ from django.conf import settings
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-print("ALLOWED_HOSTS:", os.environ.get("allowed_hosts"))
-print("SECRET_KEY:", os.environ.get("secret_key"))
-print("DATABASE_URL:", os.environ.get("db_url"))
-print("DEBUG:", os.environ.get("debug"))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("secret_key")
+SECRET_KEY = os.environ.get("secret_key", "secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("debug")
+DEBUG = os.environ.get("debug", False)
 
-ALLOWED_HOSTS = os.environ.get("allowed_hosts").split(" ")
+ALLOWED_HOSTS = [
+    ".onrender.com"
+]
 
 # for now
 CORS_ALLOW_ALL_ORIGINS = True
