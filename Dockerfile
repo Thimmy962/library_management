@@ -20,4 +20,4 @@ EXPOSE 8080
 
 # Start the application using Gunicorn
 # CMD [ "gunicorn", "--bind", "0.0.0.0:8080", "library_management.wsgi:application" ]
-CMD ["./start.sh"]
+CMD ["./bash"]
