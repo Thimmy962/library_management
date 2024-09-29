@@ -1,0 +1,12 @@
+.vscode
+*.pyc, __pycache__/
+library_management/migrations/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+env/
+venv/

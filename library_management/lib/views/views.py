@@ -1,3 +1,9 @@
+import logging
+
+# Create a logger instance
+logger = logging.getLogger(__name__)
+
+from rest_framework.filters import SearchFilter, OrderingFilter
 from django.contrib.auth.models import Group, Permission
 from ..utils import custom_permissions, serializers
 from rest_framework import decorators, status, response, permissions, generics
@@ -21,114 +27,80 @@ from rest_framework import decorators, status, response, permissions, generics
 #         return token
 
 
-@decorators.api_view(["GET"])
-@decorators.permission_classes([permissions.AllowAny])
-def path_list(request):
-    data = [
-            {
-                "Header": "Documentation on endpoints"
-            },
-            {
-                "general": [
-                    "members, staffs and librarian all inherits from  customuser which has the attributes below: ",
-                    "email(unique) compulsory",
-                    "phone_number(unique) compulsory",
-                    "first_name(case insensitive) can be null",
-                    "last_name(case insensitive) can be null",
-                    "is_active(has a default but can be overrwritten)",
-                    "is_staff(has a default but can be overrwritten)",
-                    "is_superuser(has a default but can be overrwritten)",
-                    "role(has default which is not meant to be overwritten, one of the ways registered users are diffentiated from staffs)",
-                    "password(which will be hashed)"
-                ]
-            },
-            {
-                "path": "books/",
-                "description": "list books and creates a new book",
-                "permissions": "members have read only while staffs have all permissions",
-                "requirement": [
-                    "book_name(case insensitive)",
-                    "authors(list of author id) has ManyToManyRel with authors",
-                    "gneres(list of genre id) has ManyToManyRel with genres",
-                    "synopsis has a default value (default = synopsis not given)"
-                ]
-            },
-            {
-                "path": "genres/",
-                "description": "list books and creates a new book: Requires genre name to create a new genre, must be authenticated as, atleast librarian",
-                "permissions": "authenticated and must be at leaststaff",
-                "requirements": ["name(unique, case insensitive)"]
-            },
-            {
-                "path": "authors/",
-                "description": "list and creates an author: requires first_name, last_name",
-                "permissions": "authenticated and must be at least staff",
-                "requiremnts": "inherits from customuser"
-            },
-            {
-                "path": "members/",
-                "description": "list and creates a member: requires email and username",
-                "permissions": "list members requires authentication and IsStaff(only a staff can see every library user), while anybody can create a member(library user) model",
-                "requiremnts": "inherits from customuser"
-
-            },
-            {
-                "path": "librarian/",
-                "description": "list and creates librarian, a superuser",
-                "permissions": "Must be a superuser",
-                "requiremnts": "inherits from customuser"
-
-            },
-            {
-                "path": "grps/",
-                "description": "list and creates list and creats grps",
-                "permissions": "Must be a staff"
-            },
-            {
-                "path": "staffs/",
-                "description": "list and creates staffs",
-                "permissions": "Must be a staff",
-                "requiremnts": "inherits from customuser"
-
-            },
-            {
-                "path": "permissions/",
-                "description": "list all permissions",
-                "permissions": "superuser only",
-                "requirements": "must be a superuser"
-            },
-            {
-                "path": "librarian/id",
-                "description": "retrieves librarian with this id and update or delete depebding on the http request",
-                "permission": "superuser only",
-                "requirements": "id of the librarian"
-            },
-            {
-                "path": "staff/id",
-                "description": "retrieves staff with this id and update or delete depebding on the http request",
-                "permission": "superuser only",
-                "requirements": "id of the staff"
-            },
-            {
-                "path": "member/id",
-                "description": "retrieves memeber with this id and update or delete depebding on the http request",
-                "permission": "is staff or owner",
-                "requirements": "id of the member"
-            }
-    ]
-
-    return response.Response({"paths": data}, status=status.HTTP_200_OK)
-
 #             # for groups
 
 class GETCREATEGROUPS(custom_permissions.IsSuperUserMixin, generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = serializers.GroupSerializer
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ["id", "name"]
+    ordering_fields = ["id", "name"]
+    ordering = ["id"]
 
-get_create_grps = GETCREATEGROUPS.as_view()
+
+    def perform_create(self, serializer):
+        logging.info("Creating new group")        
+        permission_ids = self.request.data.get("permission_ids", [])
+        new_grp = serializer.save()
+        for permission_id in permission_ids:
+            try:
+                permission = Permission.objects.get(pk=permission_id)
+                new_grp.permissions.add(permission)
+            except Permission.DoesNotExist:
+                logging.error("Permission with id {} does not exist".format(permission_id))
+                continue
+
+
+list_create_grps = GETCREATEGROUPS.as_view()
+
+
+
+class RETRIEVEUPDATEDELETEGROUPS(custom_permissions.IsSuperUserMixin, generics.RetrieveUpdateDestroyAPIView):
+    queryset = Group.objects.all()
+    serializer_class = serializers.GroupSerializer
+    lookup_field = "id"
+
+    def perform_update(self, serializer):
+        # Get permissions to add and remove from the request
+        logging.info("Hello World")
+        permission_ids_to_add = self.request.data.get("permission_ids_to_add", [])
+        permission_ids_to_remove = self.request.data.get("permission_ids_to_remove", [])
+
+
+        # Save the updated group details (e.g., name change)
+        updated_group = serializer.save()
+
+        # Remove specified permissions from the group
+        for permission_id in permission_ids_to_remove:
+            try:
+                permission = Permission.objects.get(pk=permission_id)
+                updated_group.permissions.remove(permission)
+            except Permission.DoesNotExist:
+                continue
+        
+        # Add new permissions to the group
+        for permission_id in permission_ids_to_add:
+            try:
+                permission = Permission.objects.get(pk=permission_id)
+                updated_group.permissions.add(permission)
+            except Permission.DoesNotExist:
+                continue
+        
+        return response.Response({"detail": "Group updated successfully"}, status=status.HTTP_200_OK)
+    
+
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+        return response.Response({"message": "Group deleted successfully"}, status=status.HTTP_200_OK)
+
+retrieve_update_delete_grp = RETRIEVEUPDATEDELETEGROUPS.as_view()
 
 
 class PermissionsListView(custom_permissions.IsStaffOrReadOnlyMixin, generics.ListCreateAPIView):
     queryset = Permission.objects.all()
     serializer_class = serializers.PermissionSerializer # Optional: restrict to logged-in users
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ["name", "codename", "content_type"]
+    ordering_fields = ["name"]
+    ordering = ["name"]
 get_perms = PermissionsListView.as_view()

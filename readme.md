@@ -26,7 +26,10 @@ run python3 manage.py create_grps
 
 run: python3 manage.py runserver
 
-http://locolhost:/ :: this gives a list of endpoints and their descriptions
+http://localhost:/swagger :: this gives a more detailed view of the endpoints
+http://localhost:/redoc :: this gives a more detailed view of the endpoints
 
 
 For Docker
+Just run the following command:
+    docker-compose up --build

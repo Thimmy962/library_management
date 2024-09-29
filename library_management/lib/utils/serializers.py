@@ -7,13 +7,23 @@ from .. import models
 
 
 
-class GroupSerializer(serializers.SerializerMethodField):
+class GroupSerializer(serializers.ModelSerializer):
+    permissions = serializers.SerializerMethodField()
     class Meta:
         model = Group
         fields = "__all__"
 
+    def get_permissions(self, obj):
+        return [permission.name for permission in obj.permissions.all()]
 
-class PermissionSerializer(serializers.SerializerMethodField):
+    def validate_name(self, value):
+        # Clean the name field
+        cleaned_value = value.strip().title()
+        if models.Group.objects.filter(name=cleaned_value).exists():
+            raise serializers.ValidationError("A group with this name already exists.")
+        return cleaned_value
+
+class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = "__all__"
@@ -51,14 +61,10 @@ class PostStaffSerializer(serializers.ModelSerializer):
 
 
 class GetStaffSerializer(serializers.ModelSerializer):
-    content_type = serializers.SerializerMethodField()
     class Meta:
         model = models.Staffs
-        fields = ["id", "email", "first_name", "last_name", "content_type"]
+        fields = ["id", "email", "first_name", "last_name"]
 
-    
-    def get_content_type(self, obj):
-        return ContentType.objects.get_for_model(obj).id
 
 
 class PostLibrarianSerializer(serializers.ModelSerializer):
@@ -73,13 +79,9 @@ class PostLibrarianSerializer(serializers.ModelSerializer):
 
 
 class GetLibrarianSerializer(serializers.ModelSerializer):
-    content_type = serializers.SerializerMethodField(read_only = True)
     class Meta:
         model = models.Librarian
-        fields = ["email", "first_name", "last_name", "content_type"]
-
-    def get_content_type(self, obj):
-        return ContentType.objects.get_for_model(models.Librarian).id
+        fields = ["email", "first_name", "last_name"]
     
 
 class GenreSerializer(serializers.ModelSerializer):
