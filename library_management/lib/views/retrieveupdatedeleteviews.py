@@ -44,11 +44,11 @@ retrieve_update_delete_librarian = LibrarianRetrieveUpdateDeleteView.as_view()
 class BookRetrieveUpdateDelete(custom_permissions.IsStaffOrReadOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Books.objects.all()
     lookup_field = "id"
-    serializer_class = serializers.GetLibrarianSerializer
+    serializer_class = serializers.BookSerializer
 
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
         return response.Response({"message": "Librarian deleted successfully"}, status=status.HTTP_200_OK)
     
-retrieve_update_book = BookRetrieveUpdateDelete.as_view()
+retrieve_update_delete_book = BookRetrieveUpdateDelete.as_view()
