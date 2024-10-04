@@ -1,3 +1,4 @@
+import logging
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -6,6 +7,8 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 
+
+logger = logging.getLogger(__name__) 
 
 class Members(manageuser.CustomUser):
     def save(self, *args, **kwargs):
@@ -67,33 +70,37 @@ class Books(models.Model):
     book_name = models.CharField(max_length=64, null=False, blank=False)
     authors = models.ManyToManyField(Authors, related_name="this_authors_books", default=None)
     genres = models.ManyToManyField(Genres, related_name="this_genres_books")
-    synopsis = models.TextField(max_length=2048, default="No synopsis given")
+    synopsis = models.TextField(max_length=2048, default="No synopsis given") 
 
-
-    @property
     def add_genres(self, genre_list):
         for genre in genre_list:
-            this_genre = models.Genre.objects.get(pk=int(genre))
-            self.genres.add(this_genre)
+            try:
+                this_genre = Genres.objects.get(pk=int(genre))
+                self.genres.add(this_genre)
+            except Genres.DoesNotExist:
+                logging.error("Genre with this ID does not exist.")
+                continue
 
-    @property
     def add_authors(self, author_list):
         for author in author_list:
-            this_author = models.Author.objects.get(pk=int(author))
-            self.authors.add(this_author)
+            try:
+                this_author = Authors.objects.get(pk=int(author))
+                self.authors.add(this_author)
+            except Authors.DoesNotExist:
+                logging.error("Author with this ID does not exist.")
+                continue
+ 
 
-
-
-class Review(models.Model):
+class Reviews(models.Model):
     class StarRating(models.IntegerChoices):
-        FIVE_STARS = 5, "5"
+        FIVE_STARS = 5, "5" 
         FOUR_STARS = 4, "4"
         THREE_STARS = 3, "3"
         TWO_STARS = 2, "2"
         ONE_STAR = 1, "1"
 
     # Reviewer relationship
-    reviewer = models.ForeignKey('Members', on_delete=models.DO_NOTHING, related_name="reviews")
+    reviewer = models.ForeignKey(manageuser.CustomUser, on_delete=models.DO_NOTHING, related_name="reviews")
     # Generic foreign key fields
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()

@@ -2,7 +2,7 @@
 from ..utils import manageuser
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
-from rest_framework import serializers, status
+from rest_framework import serializers
 from .. import models
 
 
@@ -30,7 +30,6 @@ class PermissionSerializer(serializers.ModelSerializer):
 """
     The below has to do with Non human entities
 """
-
 
 class GetMemberSerializer(serializers.ModelSerializer):
     class Meta:
@@ -103,6 +102,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class AuthorSerializer(serializers.ModelSerializer):
+    content_type = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Authors
         fields = "__all__"
@@ -120,6 +121,11 @@ class AuthorSerializer(serializers.ModelSerializer):
                 "Author with this name already exists"
             )
         return data
+    
+    def get_content_type(self, obj):
+        # get the content type of Authors
+        # return the ID of the content_type gotten
+        return ContentType.objects.get_for_model(obj).id
 
 
 """
@@ -129,6 +135,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SerializerMethodField()
     genres = serializers.SerializerMethodField()
+    content_type = serializers.SerializerMethodField()
     class Meta:
         model = models.Books  # Ensure you're using the correct model
         fields = "__all__"  # Initially, we define that we'll use all fields
@@ -145,6 +152,7 @@ class BookSerializer(serializers.ModelSerializer):
                     'book_name': fields['book_name'],
                     'authors': fields['authors'],
                     'genres': fields['genres'],
+                    'content_type': fields['content_type']
                 }
         return fields
     
@@ -155,6 +163,35 @@ class BookSerializer(serializers.ModelSerializer):
     def get_genres(self, obj):
         return [f"{genre.name}" for genre in obj.genres.all()]
 
+    # get the content type of Books
+      # return the ID of the content_type gotten
+    def get_content_type(self, obj):
+        return ContentType.objects.get_for_model(obj).id
+
     def validate_book_name(self, value):
         # Clean and validate the book name
         return value.strip().title()
+
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    reviewer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Reviews
+        fields = "__all__"
+
+
+    def get_reviewer(self, obj):
+        return f"{obj.reviewer.email}"
+    
+    def create(self, validated_data):
+        # Get the current user from the context
+        user = self.context['request'].user
+
+        # Set the 'reviewer' field to the current user
+        validated_data['reviewer'] = user
+
+        # Proceed with the regular creation process
+        return super().create(validated_data)
+

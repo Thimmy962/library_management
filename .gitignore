@@ -7,3 +7,8 @@ __pycache__
 migrations/
 db.sqlite3
 pyclients/
+library_management/staticfiles
+library_management/static/
+library_management/staticfiles/
+library_management/.env
+library_management/db1.sqlite3

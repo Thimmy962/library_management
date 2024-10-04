@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
-
 from django.conf import settings
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,7 +39,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'drf_yasg',
-    'whitenoise'
+    'whitenoise',
+    'dashboard_analytics'
 ]
 
 SIMPLE_JWT = {
@@ -124,16 +126,23 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    "secondary":{
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db1.sqlite3',
     }
 }
 
 
 
 DATABASE_URL = os.environ.get('DB_URL')
+DATABASE1_URL = os.environ.get('DB1_URL')
 
-DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL)
-}
+
+DATABASES['default'] = dj_database_url.parse(DATABASE_URL)
+DATABASES['secondary'] = dj_database_url.parse(DATABASE1_URL)
+
+DATABASE_ROUTERS = ['routers.DatabaseRouter']
 
 
 

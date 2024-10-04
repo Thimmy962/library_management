@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.models import ContentType      
+from .. import models
 from rest_framework import permissions
 
 
@@ -32,6 +34,15 @@ class IsStaffUser(permissions.BasePermission):
             return True
         return False
 
+class IsMember(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        # get the content type of member
+        member_content_type = ContentType.objects.get_for_model(models.Members)
+        # if the user is and is a member
+        print(user.role)
+        return bool(user.is_authenticated and user.role == "MEMBER")
+
 
 # allow any user to get but staffs alone to edit
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -41,15 +52,24 @@ class IsStaffOrReadOnly(permissions.BasePermission):
         return request.user.is_authenticated and request.user.is_staff
 
 
-
-from rest_framework import permissions
-
 class IsStaffOrOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
+        user = request.user
         # Allow if the user is authenticated and is staff or the owner (by email comparison)
-        return request.user.is_authenticated and (request.user.is_staff or obj.email == request.user.email)
+        return user.is_authenticated and (user.is_staff or obj.email == user.email)
 
-
+# if the user is a stff or the person who wrote the review
+class IsSuperUserOrOwnerOfReview(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.is_authenticated and user.is_superuser:
+            return True
+        '''
+            every reviewer is member
+            if the email of reviewer of this current review is the same as the email of the current user i.e the current user is also wrote this review
+                return True  
+        '''
+        return user.email == obj.reviewer.email
 
 
 """
@@ -82,3 +102,6 @@ class IsStaffOrOwnerMixin:
 
 class IsStaffOrReadOnlyMixin:
     permission_classes = [IsStaffOrReadOnly]
+
+class IsSuperUserOrOwnerOfReviewMixin:
+    permission_classes = [IsSuperUserOrOwnerOfReview]

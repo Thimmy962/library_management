@@ -1,7 +1,8 @@
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import permissions, response, status, generics
 from ..utils import custom_permissions
-from ..models import Members, Staffs, Librarian, Genres, Authors, Books
+from ..models import Members, Staffs, Librarian, Genres, Authors, Books, Reviews
 from ..utils import serializers
 
 class MemberListCreateView(custom_permissions.IsStaffMixin, generics.ListCreateAPIView):
@@ -99,11 +100,12 @@ class BooksListCreateView(custom_permissions.IsStaffOrReadOnlyMixin, generics.Li
     queryset = Books.objects.all()
     serializer_class = serializers.BookSerializer
     filter_backends = (SearchFilter, OrderingFilter)
-    search_fields = ['book_name']  # Specify fields to search on
-    ordering_fields = ['book_name']  # Fields to order by
-    ordering = ['book_name'] 
+    search_fields = ['book_name']
+    ordering_fields = ['book_name']
+    ordering = ['book_name']
 
     def perform_create(self, serializer):
+        try:
             # Get author and genre lists from the request
             author_list = self.request.data.get("authors", [])
             genre_list = self.request.data.get("genres", [])
@@ -111,17 +113,45 @@ class BooksListCreateView(custom_permissions.IsStaffOrReadOnlyMixin, generics.Li
             # Save the book instance using validated data
             new_book = serializer.save()
 
-            # Add genres and authors to the book
-            for genre_id in genre_list:
-                genre = Genres.objects.get(pk=genre_id)
-                new_book.genres.add(genre)
+            new_book.add_genres(genre_list)
+            new_book.add_authors(author_list)
+        except Exception:
+            raise serializers.serializers.ValidationError("Something went wrong while trying to validate a data")
 
-            for author_id in author_list:
-                author = Authors.objects.get(pk=author_id)
-                new_book.authors.add(author)
 
     def create(self, request, *args, **kwargs):
             # You don't need to override this unless you want to change the response
             super().create(request, *args, **kwargs)
-            return response.Response({"message": "Book created successfully"}, status=status.HTTP_201_CREATED)    
+            return response.Response({"message": "Book created successfully"}, status=status.HTTP_201_CREATED) 
+   
 list_create_books = BooksListCreateView.as_view()
+
+
+class ReviewListView(generics.ListAPIView):
+    serializer_class = serializers.ReviewSerializer
+    permission_classes = [permissions.AllowAny]
+    def get_queryset(self):
+        '''
+            you can post a review for the book or author
+            get the content_type this review is for
+            Is this content_type that of a book or an author
+        '''
+        content_type_id = self.kwargs.get("content_type_id")
+
+        content_type = ContentType.objects.get(pk = int(content_type_id))
+
+        # get the ID of the object to which this review belong
+        obj_id = self.kwargs.get("obj_id")
+
+
+        return Reviews.objects.filter(content_type = content_type, object_id = obj_id)
+    
+list_reviews = ReviewListView.as_view()
+
+
+class ReviewCreateView(generics.CreateAPIView):
+    queryset = Reviews.objects.all()
+    serializer_class = serializers.ReviewSerializer
+    permission_classes = [custom_permissions.IsMember]
+
+create_reviews = ReviewCreateView.as_view()

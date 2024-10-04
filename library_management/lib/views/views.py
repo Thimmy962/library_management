@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.contrib.auth.models import Group, Permission
 from ..utils import custom_permissions, serializers
-from rest_framework import decorators, status, response, permissions, generics
+from rest_framework import decorators, status, response, generics
 
 # from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # from rest_framework_simplejwt.views import TokenObtainPairView
@@ -50,9 +50,7 @@ class GETCREATEGROUPS(custom_permissions.IsSuperUserMixin, generics.ListCreateAP
                 logging.error("Permission with id {} does not exist".format(permission_id))
                 continue
 
-
 list_create_grps = GETCREATEGROUPS.as_view()
-
 
 
 class RETRIEVEUPDATEDELETEGROUPS(custom_permissions.IsSuperUserMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -103,4 +101,5 @@ class PermissionsListView(custom_permissions.IsStaffOrReadOnlyMixin, generics.Li
     search_fields = ["name", "codename", "content_type"]
     ordering_fields = ["name"]
     ordering = ["name"]
+
 get_perms = PermissionsListView.as_view()

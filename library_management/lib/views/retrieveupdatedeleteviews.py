@@ -1,4 +1,4 @@
-from ..models import Members, Staffs, Librarian, Books
+from ..models import Members, Staffs, Librarian, Books, Reviews
 from rest_framework import generics, response, status
 from ..utils import serializers, custom_permissions
 
@@ -41,7 +41,7 @@ class LibrarianRetrieveUpdateDeleteView(custom_permissions.IsSuperUserMixin, gen
 retrieve_update_delete_librarian = LibrarianRetrieveUpdateDeleteView.as_view()
 
 
-class BookRetrieveUpdateDelete(custom_permissions.IsStaffOrReadOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
+class BookRetrieveUpdateDeleteView(custom_permissions.IsStaffOrReadOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Books.objects.all()
     lookup_field = "id"
     serializer_class = serializers.BookSerializer
@@ -49,6 +49,27 @@ class BookRetrieveUpdateDelete(custom_permissions.IsStaffOrReadOnlyMixin, generi
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        return response.Response({"message": "Librarian deleted successfully"}, status=status.HTTP_200_OK)
+        return response.Response({"message": "Book deleted successfully"}, status=status.HTTP_200_OK)
     
-retrieve_update_delete_book = BookRetrieveUpdateDelete.as_view()
+retrieve_update_delete_book = BookRetrieveUpdateDeleteView.as_view()
+
+
+class ReviewRetrieveUpdateDeleteView(custom_permissions.IsStaffOrOwnerMixin, generics.RetrieveUpdateDestroyAPIView):
+    queryset = Reviews.objects.all()
+    lookup_field = "id"
+    serializer_class = serializers.ReviewSerializer
+    permission_classes = [custom_permissions.IsSuperUserOrOwnerOfReview]
+
+
+    def update(self, request, *args, **kwargs):
+        try:
+            super().update(request, *args, **kwargs)
+            return response.Response({"message": "Review has been updated successfully"}, status=status.HTTP_202_ACCEPTED)
+        except Exception:
+            return response.Response({"message": "could not modify update"})
+    
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+        return response.Response({"message": "Review deleted successfully"}, status=status.HTTP_200_OK)
+        
+retrieve_update_delete_reviews = ReviewRetrieveUpdateDeleteView.as_view()
