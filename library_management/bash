@@ -4,7 +4,7 @@
 set -e
 
 # Run Django management commands for migrations and static files
-python manage.py makemigrations lib
+python manage.py makemigrations lib --noinput
 python manage.py migrate
 python manage.py collectstatic --noinput
 python manage.py create_grps

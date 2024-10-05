@@ -197,6 +197,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
     def get_object_name(self, obj):
+
             '''
                 get model class of the content type
                 i.e get the class that this content belongs to.
