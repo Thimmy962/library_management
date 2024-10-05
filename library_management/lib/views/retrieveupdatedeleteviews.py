@@ -1,5 +1,5 @@
-from ..models import Members, Staffs, Librarian, Books, Reviews
-from rest_framework import generics, response, status
+from ..models import Members, Staffs, Librarian, Books, Reviews, Authors
+from rest_framework import (generics, response, status, permissions)
 from ..utils import serializers, custom_permissions
 
 class MemberRetrieveUpdateDeleteView(custom_permissions.IsStaffOrOwnerMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -41,11 +41,18 @@ class LibrarianRetrieveUpdateDeleteView(custom_permissions.IsSuperUserMixin, gen
 retrieve_update_delete_librarian = LibrarianRetrieveUpdateDeleteView.as_view()
 
 
+class AuthorRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Authors.objects.all()
+    serializer_class = serializers.AuthorSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = "id"
+
+retrieve_update_delete_author = AuthorRetrieveUpdateDeleteView.as_view()
+
 class BookRetrieveUpdateDeleteView(custom_permissions.IsStaffOrReadOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Books.objects.all()
     lookup_field = "id"
     serializer_class = serializers.BookSerializer
-
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
@@ -54,11 +61,17 @@ class BookRetrieveUpdateDeleteView(custom_permissions.IsStaffOrReadOnlyMixin, ge
 retrieve_update_delete_book = BookRetrieveUpdateDeleteView.as_view()
 
 
-class ReviewRetrieveUpdateDeleteView(custom_permissions.IsStaffOrOwnerMixin, generics.RetrieveUpdateDestroyAPIView):
+class ReviewRetrieveUpdateDeleteView(custom_permissions.IsSuperUserOrOwnerOfReviewMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Reviews.objects.all()
     lookup_field = "id"
     serializer_class = serializers.ReviewSerializer
-    permission_classes = [custom_permissions.IsSuperUserOrOwnerOfReview]
+
+
+    def get_permissions(self):
+        method = self.request.method
+        if method == "GET":
+            return [permissions.AllowAny()]
+        return super().get_permissions()
 
 
     def update(self, request, *args, **kwargs):

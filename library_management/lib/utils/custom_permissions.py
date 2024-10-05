@@ -68,7 +68,7 @@ class IsSuperUserOrOwnerOfReview(permissions.BasePermission):
             if the email of reviewer of this current review is the same as the email of the current user i.e the current user is also wrote this review
                 return True  
         '''
-        return user.email == obj.reviewer.email
+        return user.is_authenticated and user.email == obj.reviewer.email
 
 
 """

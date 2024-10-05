@@ -7,3 +7,4 @@ psycopg2-binary
 drf-yasg
 whitenoise
 dj-database-url
+python-dotenv

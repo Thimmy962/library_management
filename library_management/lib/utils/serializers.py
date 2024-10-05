@@ -197,7 +197,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
     def get_object_name(self, obj):
-        try:
             '''
                 get model class of the content type
                 i.e get the class that this content belongs to.
@@ -205,16 +204,18 @@ class ReviewSerializer(serializers.ModelSerializer):
                 If it belongs to Book class, get Book class
                 obj.content_type means get the content_type field of the object we are serailizing
             '''
-            model_class = obj.content_type.model_class()
+            content_type = obj.content_type
+            model_class = content_type.model_class()
             '''
                 Get the instance of the model above for which this review belong
                 i.e if this review belongs to Authors class, which author does it belong to?
                 or if this review belongs to  Books class, which book does it belong too?
             '''
             this_object = model_class.objects.get(pk = obj.object_id)
-            if this_object.book_name:
-                return f"{this_object.book_name}"
-            if this_object.first_name:
+            try:
                 return f"{this_object.first_name}, {this_object.last_name}"
-        except: pass
+            except:
+                return f"{this_object.book_name}"
+
+
         

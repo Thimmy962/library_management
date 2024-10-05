@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . /app/
 
 # Install dependencies using the requirements.txt located in /app
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Change the working directory to the folder that contains manage.py
 WORKDIR /app/library_management
