@@ -40,7 +40,6 @@ class IsMember(permissions.BasePermission):
         # get the content type of member
         member_content_type = ContentType.objects.get_for_model(models.Members)
         # if the user is and is a member
-        print(user.role)
         return bool(user.is_authenticated and user.role == "MEMBER")
 
 
