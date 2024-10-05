@@ -127,20 +127,20 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
-    "secondary":{
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db1.sqlite3',
-    }
+    # "secondary":{
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db1.sqlite3',
+    # }
 }
 
 
 
 DATABASE_URL = os.environ.get('DB_URL')
-DATABASE1_URL = os.environ.get('DB1_URL')
+# DATABASE1_URL = os.environ.get('DB1_URL')
 
 
 DATABASES['default'] = dj_database_url.parse(DATABASE_URL)
-DATABASES['secondary'] = dj_database_url.parse(DATABASE1_URL)
+# DATABASES['secondary'] = dj_database_url.parse(DATABASE1_URL)
 
 DATABASE_ROUTERS = ['routers.DatabaseRouter']
 
