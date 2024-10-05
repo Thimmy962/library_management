@@ -131,20 +131,21 @@ class ReviewListView(generics.ListAPIView):
     serializer_class = serializers.ReviewSerializer
     permission_classes = [permissions.AllowAny]
     def get_queryset(self):
-        '''
-            you can post a review for the book or author
-            get the content_type this review is for
-            Is this content_type that of a book or an author
-        '''
-        content_type_id = self.kwargs.get("content_type_id")
+        try:
+            '''
+                you can post a review for the book or author
+                get the content_type this review is for
+                Is this content_type that of a book or an author
+            '''
+            content_type_id = self.kwargs.get("content_type_id")
 
-        content_type = ContentType.objects.get(pk = int(content_type_id))
+            content_type = ContentType.objects.get(pk = int(content_type_id))
 
-        # get the ID of the object to which this review belong
-        obj_id = self.kwargs.get("obj_id")
-
-
-        return Reviews.objects.filter(content_type = content_type, object_id = obj_id)
+            # get the ID of the object to which this review belong
+            obj_id = self.kwargs.get("obj_id")
+            return Reviews.objects.filter(content_type = content_type, object_id = obj_id)
+        except:
+            return response.Response({"message": "Does not exists"}, status=status.HTTP_404)
     
 list_reviews = ReviewListView.as_view()
 
@@ -153,5 +154,6 @@ class ReviewCreateView(generics.CreateAPIView):
     queryset = Reviews.objects.all()
     serializer_class = serializers.ReviewSerializer
     permission_classes = [custom_permissions.IsMember]
+
 
 create_reviews = ReviewCreateView.as_view()

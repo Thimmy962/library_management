@@ -37,8 +37,6 @@ class IsStaffUser(permissions.BasePermission):
 class IsMember(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
-        # get the content type of member
-        member_content_type = ContentType.objects.get_for_model(models.Members)
         # if the user is and is a member
         return bool(user.is_authenticated and user.role == "MEMBER")
 
@@ -58,9 +56,11 @@ class IsStaffOrOwner(permissions.BasePermission):
         return user.is_authenticated and (user.is_staff or obj.email == user.email)
 
 # if the user is a stff or the person who wrote the review
-class IsSuperUserOrOwnerOfReview(permissions.BasePermission):
+class IsSuperUserOrOwnerOfRevieworReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
+        if request.method in permissions.SAFE_METHODS:
+            return True
         if user.is_authenticated and user.is_superuser:
             return True
         '''
@@ -68,7 +68,7 @@ class IsSuperUserOrOwnerOfReview(permissions.BasePermission):
             if the email of reviewer of this current review is the same as the email of the current user i.e the current user is also wrote this review
                 return True  
         '''
-        return user.is_authenticated and user.email == obj.reviewer.email
+        return bool(user.is_authenticated and user.email == obj.reviewer.email)
 
 
 """
@@ -103,4 +103,4 @@ class IsStaffOrReadOnlyMixin:
     permission_classes = [IsStaffOrReadOnly]
 
 class IsSuperUserOrOwnerOfReviewMixin:
-    permission_classes = [IsSuperUserOrOwnerOfReview]
+    permission_classes = [IsSuperUserOrOwnerOfRevieworReadOnly]

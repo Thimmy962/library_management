@@ -186,15 +186,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_reviewer(self, obj):
         return f"{obj.reviewer.email}"
     
-    def create(self, validated_data):
-        # Get the current user from the context
-        user = self.context['request'].user
-
-        # Set the 'reviewer' field to the current user
-        validated_data['reviewer'] = user
-
-        # Proceed with the regular creation process
-        return super().create(validated_data)
     
     def get_object_name(self, obj):
 
@@ -212,11 +203,39 @@ class ReviewSerializer(serializers.ModelSerializer):
                 i.e if this review belongs to Authors class, which author does it belong to?
                 or if this review belongs to  Books class, which book does it belong too?
             '''
-            this_object = model_class.objects.get(pk = obj.object_id)
             try:
-                return f"{this_object.first_name}, {this_object.last_name}"
-            except:
-                return f"{this_object.book_name}"
+                this_object = model_class.objects.get(pk = obj.object_id)
+                try:
+                    return f"{this_object.first_name}, {this_object.last_name}"
+                except:
+                    return f"{this_object.book_name}"
+            except Exception as e:
+                raise serializers.ValidationError({"message": str(e)})
 
+            
+    def validate(self, data):
+        content_type = data["content_type"]
+        model_class = content_type.model_class()
+        try:
+            '''
+                if there is an instance with id of obj_id for this model, then data is valid
+                else validation error
+            '''
+            model_class.objects.get(pk = data["object_id"])
+            return data
+        except Exception as e:
+            raise serializers.ValidationError({"message": str(e)})
+            
 
         
+        
+
+    def create(self, validated_data):
+        # Get the current user from the context
+        user = self.context['request'].user
+
+        # Set the 'reviewer' field to the current user
+        validated_data['reviewer'] = user
+
+        # Proceed with the regular creation process
+        return super().create(validated_data)

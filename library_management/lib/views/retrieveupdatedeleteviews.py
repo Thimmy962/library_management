@@ -66,20 +66,12 @@ class ReviewRetrieveUpdateDeleteView(custom_permissions.IsSuperUserOrOwnerOfRevi
     lookup_field = "id"
     serializer_class = serializers.ReviewSerializer
 
-
-    def get_permissions(self):
-        method = self.request.method
-        if method == "GET":
-            return [permissions.AllowAny()]
-        return super().get_permissions()
-
-
     def update(self, request, *args, **kwargs):
         try:
             super().update(request, *args, **kwargs)
             return response.Response({"message": "Review has been updated successfully"}, status=status.HTTP_202_ACCEPTED)
-        except Exception:
-            return response.Response({"message": "could not modify update"})
+        except Exception as e:
+            return response.Response({"message": str(e)})
     
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
