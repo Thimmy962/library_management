@@ -12,3 +12,4 @@ library_management/static/
 library_management/staticfiles/
 library_management/.env
 library_management/db1.sqlite3
+library_management/dump.rdb
