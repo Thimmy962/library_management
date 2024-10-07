@@ -4,9 +4,8 @@ migrations/
 dump.rdb
 logs.*
 pyclients/
-library_management/static/
-library_management/staticfiles/
-library_management/dump.rdb
-/env/
-library_management/logs.txt
-library_management/.env
+static/
+staticfiles/
+dump.rdb
+logs.txt
+.env
