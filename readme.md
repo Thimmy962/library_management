@@ -1,8 +1,10 @@
-Working on this project force me to learn large number of thing about django
+Working on this project forced me to learn large number of things about django
 a: groups and permissions
 b: custom permissions and creating custom manage.py commands
 c: environmental variable and .env file
 d: Custom data validation in while serializing
+e: logging in django
+f: github actions
 
 
 

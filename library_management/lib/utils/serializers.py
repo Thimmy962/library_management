@@ -1,10 +1,15 @@
 # serializers.py
+from datetime import datetime
 from ..utils import manageuser
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from .. import models
 
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -20,6 +25,8 @@ class GroupSerializer(serializers.ModelSerializer):
         # Clean the name field
         cleaned_value = value.strip().title()
         if models.Group.objects.filter(name=cleaned_value).exists():
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time}, A Group with name {cleaned_value} already exists")
             raise serializers.ValidationError("A group with this name already exists.")
         return cleaned_value
 
@@ -44,6 +51,8 @@ class PostMemberSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time} User with email {value.lower()} already exists")
             raise serializers.ValidationError({"message": "A user with this email already exists."})
         return value
 
@@ -55,8 +64,11 @@ class PostStaffSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time} User with email {value.lower()} already exists")
             raise serializers.ValidationError({"message": "A user with this email already exists."})
         return value
+    
 
 
 class GetStaffSerializer(serializers.ModelSerializer):
@@ -73,6 +85,8 @@ class PostLibrarianSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if manageuser.CustomUser.objects.filter(email=value.lower()).exists():
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time} User with email {value.lower()} already exists")
             raise serializers.ValidationError({"message": "A user with this email already exists."})
         return value
 
@@ -95,6 +109,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
         # Check if the cleaned name already exists in the database
         if models.Genres.objects.filter(name=cleaned_value).exists():
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time} Genre with name {cleaned_value} already exists")
             raise serializers.ValidationError("A genre with this name already exists.")
 
         return cleaned_value
@@ -117,6 +133,8 @@ class AuthorSerializer(serializers.ModelSerializer):
             first_name=data["first_name"], 
             last_name=data["last_name"]
         ).exists():
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time} Author with name {data['first_name']} {data['last_name']} already exists")
             raise serializers.ValidationError(
                 "Author with this name already exists"
             )
@@ -224,6 +242,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             model_class.objects.get(pk = data["object_id"])
             return data
         except Exception as e:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logging.error(f"{current_time} {str(e)}")
             raise serializers.ValidationError({"message": str(e)})
             
 
@@ -236,6 +256,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
         # Set the 'reviewer' field to the current user
         validated_data['reviewer'] = user
-
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        logging.info(f"{current_time} New review created by {user.email}")
         # Proceed with the regular creation process
         return super().create(validated_data)

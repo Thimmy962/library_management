@@ -202,11 +202,24 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "level": "DEBUG"
         },
+        "file":{
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "logs.txt"
+        }
     },
     "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
+        "handlers": ["console", "file"],
+        "level": "DEBUG",
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
-

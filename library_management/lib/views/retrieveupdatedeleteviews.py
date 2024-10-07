@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 from ..models import Members, Staffs, Librarian, Books, Reviews, Authors
 from rest_framework import (generics, response, status, permissions)
 from ..utils import serializers, custom_permissions
