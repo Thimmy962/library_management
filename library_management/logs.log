@@ -1,5 +1,0 @@
-Unauthorized: /grps/
-"GET /grps/ HTTP/1.1" 401 5156
-/home/thimmy/projects/library/library_management/library_management/settings.py changed, reloading.
-Watching for file changes with StatReloader
-/home/thimmy/projects/library/library_management/library_management/settings.py changed, reloading.
