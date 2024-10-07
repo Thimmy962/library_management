@@ -50,7 +50,7 @@ jobs:
       - name: Merge work into master
         run: |
           git checkout master
-          git merge work --no-ff --no-edit
+          git merge work --no-ff --no-edit --allow-unrelated-histories
 
       - name: Push changes to main
         run: |
