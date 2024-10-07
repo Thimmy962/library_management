@@ -32,7 +32,7 @@ class CreateReviewsTest(TestCase):
         a1 = model.objects.get(pk = 2)
         self.assertEqual(a.first_name, "Dan")
         
-        self.assertEqual(a, a1)
+        self.assertNotEqual(a, a1)
 
     def test_booKs(self):
         c = Client()

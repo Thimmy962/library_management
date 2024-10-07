@@ -7,6 +7,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DEBUG: ${{ secrets.DEBUG }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALLOWED_HOSTS: '*'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,7 +27,7 @@ jobs:
 
       - name: Run tests
         run: |
-          python3 library_management/manage.py test
+          python3 manage.py test
 
   merge:
     needs: test
