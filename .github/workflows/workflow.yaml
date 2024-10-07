@@ -47,11 +47,11 @@ jobs:
         run: |
           git checkout work
 
-      - name: Merge work into main
+      - name: Merge work into master
         run: |
-          git checkout main
+          git checkout master
           git merge work --no-ff --no-edit
 
       - name: Push changes to main
         run: |
-          git push origin main
+          git push origin master
