@@ -8,15 +8,13 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # Copy the entire project (including the library_management folder)
-COPY requirements.txt /app/
+COPY . /app/
 
 # Install dependencies using the requirements.txt located in /app
 RUN pip install -r requirements.txt
 
-COPY . /app/
-
 # Change the working directory to the folder that contains manage.py
-WORKDIR /app/
+WORKDIR /app/library_management
 
 
 # Expose port 8080 for the application
