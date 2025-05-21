@@ -39,6 +39,7 @@ run: python3 manage.py runserver
 http://localhost:/swagger :: this gives a more detailed view of the endpoints
 http://localhost:/redoc :: this gives a more detailed view of the endpoints
 
+Did it to learn not to show, so IT IS NOT COMPLETE
 
 For Docker
 Just run the following command:
